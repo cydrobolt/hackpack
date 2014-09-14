@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, g, redirect, Markup, url_for,
 import hashlib, urllib
 import datetime
 import random, string
-import os
+import os, logging, time
 
 
 #########################
@@ -23,9 +23,10 @@ In the future, use MongoDB :)
 ####    VARS    ####
 ####################
 
-user_data = dict()
+userdata = dict()
 
-
+f = open('post.log', 'a')
+f.write("Opened")
 
 #Init Flask
 app = Flask(__name__, static_url_path='')
@@ -50,10 +51,11 @@ def is_int(s):
 @app.route('/')
 def root():
 	return app.send_static_file('index.html')
-@app.route('/io/in/<token>')
-def ioin (token, methods=['GET', 'POST']):
+@app.route('/io/in/<token>/<accel_data>', methods=['POST', 'GET'])
+def ioin (token, accel_data):
+	accel_data = str(accel_data)
 	try:
-		token = userdata[token]['ex']+"exist?"
+		bahtoken = userdata[token]['ex']+"exist?"
 		# does the token already exist?
 		
 		# no exception? yup
@@ -63,23 +65,26 @@ def ioin (token, methods=['GET', 'POST']):
 		userdata[token]['ex'] = "yes"
 		userdata[token]['accel']  = dict()
 		userdata[token]['gps']  = dict()
-			
-		
 	try:
 		try:
-			accel_data = request['accel_data'] # POST'ed piece of accelorometer data
+			#accel_data = str(request.args.get('accel_data', '')) # POST'ed piece of accelorometer data
+			accel_array = accel_data.split("-")
+			#f.write(accel_data)
+			accel_array = [int(x) for x in accel_array]
+			accel_data = sum(accel_array)
 		except:
 			accel_data = 0 # if N/A, don't graph as a large diff!
 		try:
-			gps_data = request['gps_data'] # POST'ed piece of GPS data
+			gps_data = request.args.get('gps_data', '') # POST'ed piece of GPS data
 		except:
 			gps_data = 0 # if N/A, don't graph as a large diff!
-		
-		userdata[token]['accel'][str(time.strftime("%c"))] = accel_data
-		userdata[token]['gps'][str(time.strftime("%c"))] = gps_data
+		ts = time.time()
+		st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+		userdata[token]['accel'][str(st)] = accel_data
+		userdata[token]['gps'][str(st)] = gps_data
 		userdata[token]['latest_accel'] = accel_data
 		userdata[token]['latest_gps'] = gps_data
-		
+			
 		return "ok"
 	except:
 		return "error"
@@ -93,13 +98,16 @@ def sdata():
 	return app.send_static_file('sdata.html')
 
 
-@app.route('/io/out/<token>')
+@app.route('/io/out/<token>', methods=['GET', 'POST'])
 def ioout(token):
 	# get JSON accel & gps data
-	accel_d = userdata[token]['latest_accel']
-	gps_d = userdata[token]['latest_gps']
+	try:
+		accel_d = userdata[token]['latest_accel']
+		gps_d = userdata[token]['latest_gps']
+	except:
+		return '{"accel":"0","gps":"0"}'
 
-	return '{"accel":"'+accel_d+'"gps":"'+gps_d+'"}'	
+	return '{"accel":"'+str(accel_d)+'","gps":"'+str(gps_d)+'"}'
 
 # weird things for skel.js
 

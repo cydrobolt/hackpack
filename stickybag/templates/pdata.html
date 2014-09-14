@@ -7,64 +7,83 @@
 -->
 <html>
 	<head>
-		<title>Generic - Alpha by HTML5 UP</title>
+		<title>Tracking phone {{token}}</title>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="description" content="" />
 		<meta name="keywords" content="" />
 		<!--[if lte IE 8]><script src="css/ie/html5shiv.js"></script><![endif]-->
-		<script src="js/jquery.min.js"></script>
-		<script src="js/jquery.dropotron.min.js"></script>
-		<script src="js/jquery.scrollgress.min.js"></script>
-		<script src="js/skel.min.js"></script>
-		<script src="js/skel-layers.min.js"></script>
-		<script src="js/init.js"></script>
+		<script src="../js/jquery.min.js"></script>
+		<script src="../js/jquery.dropotron.min.js"></script>
+		<script src="../js/jquery.scrollgress.min.js"></script>
+		
+
 		<noscript>
-			<link rel="stylesheet" href="css/skel.css" />
-			<link rel="stylesheet" href="css/style.css" />
-			<link rel="stylesheet" href="css/style-wide.css" />
+			<link rel="stylesheet" href="../css/skel.css" />
+			<link rel="stylesheet" href="../css/style.css" />
+			<link rel="stylesheet" href="../css/style-wide.css" />
 		</noscript>
+		<link href="//maxcdn.bootstrapcdn.com/bootswatch/3.2.0/cosmo/bootstrap.min.css" rel="stylesheet">
+				<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 		<script>
 		$(document).ready(function() {
+			var b4;
+			console.log('Ready!');
+			b4 = 0;
+			var interval = window.setInterval(poll_server, 500);
 			function poll_server() {
-				// stuff
-			}
-		});
+				var token = "{{token}}";
+				var request = $.ajax({
+					url: "/io/out/"+token,
+					type: "GET",
+					dataType: "html"
+				});
+				request.done(function (msg) {
+					   var obj = JSON.parse(msg);
+					   var accel = parseInt(obj.accel);
+					   console.log("ACCEL: "+accel);
+					   var adiff = Math.abs((b4-accel));
+					   var pdiff = 100-(Math.abs(accel/b4)*100);
+					   if (adiff>200) {
+						   adiff = 100;
+					   }
+					   console.log(pdiff);
+					   var gps = obj.gps;
+					   b4 = accel;
+					   $('#accelcir').attr('aria-valuenow', adiff);
+					   console.log(adiff);
+					   $('.progress-bar').css('width', adiff+'%').attr('aria-valuenow', adiff); 					   
+				});
+				request.fail(function (jqXHR, textStatus) {
+					$('#status').html(' <span style="color:red"><i class="fa fa-exclamation-circle"></i> An error occured. Try again</span>');
+				});
+		}
+	});
 		</script>	
 		<!--[if lte IE 8]><link rel="stylesheet" href="css/ie/v8.css" /><![endif]-->
 	</head>
 	<body>
-
-		<!-- Header -->
-			<header id="header" class="alt">
-				<h1><a href="index.html">StickyBag</a> by Jason Fisch, Max Shavrick, and Chaoyi Zha</h1>
-				<nav id="nav">
-					<ul>
-						<li><a href="index.html">Home</a></li>
-						<li>
-							<a href="" class="icon fa-angle-down">StickyBag</a>
-							<ul>
-								<li><a href="/sdata">Phone Dashboard</a></li>
-							</ul>
-						</li>
-						<li><a href="#cta" class="button">Contact us</a></li>
-					</ul>
-				</nav>
-			</header>
 		<!-- Main -->
-			<section id="main" class="container">
+			<section id="main" class="container" style="text-align:center">
 				<header>
 					<h2>Phone {{token}}</h2>
 					<p>Tracking {{token}}.</p>
 				</header>
 				<div class="box">
-					<span class="image featured"><img src="images/pic01.jpg" alt="" /></span>
-					<h3>This is a subheading</h3>
-					<p>Cep risus aliquam gravida cep ut lacus amet. Adipiscing faucibus nunc placerat. Tempus adipiscing turpis non blandit accumsan eget lacinia nunc integer interdum amet aliquam ut orci non col ut ut praesent. Semper amet interdum mi. Phasellus enim laoreet ac ac commodo faucibus faucibus. Curae ante vestibulum ante. Blandit. Ante accumsan nisi eu placerat gravida placerat adipiscing in risus fusce vitae ac mi accumsan nunc in accumsan tempor blandit aliquet aliquet lobortis. Ultricies blandit lobortis praesent turpis. Adipiscing accumsan adipiscing adipiscing ac lacinia cep. Orci blandit a iaculis adipiscing ac. Vivamus ornare laoreet odio vis praesent nunc lorem mi. Erat. Tempus sem faucibus ac id. Vis in blandit. Nascetur ultricies blandit ac. Arcu aliquam. Accumsan mi eget adipiscing nulla. Non vestibulum ac interdum condimentum semper commodo massa arcu.</p>
+					
+					<h3>Realtime Data</h3>
+					<p>Monitor data from StickyBag</p>
+					<div id="status"></div>
 					<div class="row">
 						<div class="6u">
 							<h3>Accelerometer</h3>
-							<p>Data from backpack's accelerometer.</p><br />
-							<div id='accel'></div>
+							<p>Movement from backpack's accelerometer. The bar below signifies movement.</p><br />
+							<div id='accel'>
+							<div class="progress" style="height:60px;text-align:center">
+							  <div id="accelcir" class="progress-bar progress-bar-striped active"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+								<span class="sr-only">Accelerometer</span>
+							  </div>
+							</div>
+							</div>
 						</div>
 						<div class="6u">
 							<h3>GPS Radius</h3>
@@ -77,11 +96,7 @@
 			
 		<!-- Footer -->
 			<footer id="footer">
-				<ul class="icons">
-				</ul>
-				<ul class="copyright">
-					<li>&copy; StickyBag.</li>
-				</ul>
+				&copy; StickyBag
 			</footer>
 
 	</body>
