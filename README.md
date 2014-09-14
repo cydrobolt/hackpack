@@ -1,19 +1,13 @@
-SocialAcademy
-=============
+Hackpack
+===============
 
-###Welcome to SocialAcademy!
+Please look at http://amethyst.cydrobolt.com:8500 for more info
 
-SocialAcademy is a Platform-as-a-Service. It is a website designed to allow students to study while competing against one another, in real-time. 
-
-Prerequisites:
-
- - Python 2.7
- - Flask
- - Flask-SQLAlchemy
- - MySQL
- - Jinja2
+PennApps X hack
 
 
-SocialAcademy is currently in development. It may not be stable. Not ready for production.
+Team:
 
-Welcoming contributions!
+ - Chaoyi Zha
+ - Jason Fisch
+ - Max Shavrick
