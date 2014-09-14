@@ -86,7 +86,7 @@ def ioin (token, methods=['GET', 'POST']):
 
 @app.route('/pdata/<token>')
 def pdata(token):
-	pass
+	return render_template('pdata.html', token=token)
 	
 @app.route('/sdata')
 def sdata():
